@@ -184,6 +184,8 @@ local BoatConfig = Boat:AddSection({
 BoatConfig:AddButton({
 	Name = "Teleport to boat",
 	Callback = function()
+		-- repeat task.wait() until game.Workspace:FindFirstChild(("%s's Boat"):format(game.Players.LocalPlayer.Name)) 
+
 		for i, v in pairs(game.Workspace:GetChildren()) do
 			if v.Name == (PlayerLocal.Name .. "'s Boat") then
 				teleport(v.Controller.VehicleSeat.CFrame + Vector3.new(0, 3, 0))
