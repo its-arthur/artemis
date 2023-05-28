@@ -68,7 +68,7 @@ settings = read_settings()
 --------------------------------------------------
 
 --#region UI & Tab
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/its-arthur/ArthurHub/master/guiOrion.lua')))()
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/its-arthur/artemis/main/Libs/Orion.lua')))()
 local Window = OrionLib:MakeWindow({
 	Name = SCRIPTNAME,
 	HidePremium = false,
@@ -159,6 +159,13 @@ local ESPSection = Main:AddSection({
 	Name = "ESP"
 })
 
+-- ESPSection:AddLabel("Green : Great White Shark")
+-- ESPSection:AddLabel("Yellow : Big Great White Shark")
+-- ESPSection:AddLabel("Red : Neon Great White Shark")
+-- ESPSection:AddLabel("Blue : Killer Whale")
+-- ESPSection:AddLabel("Light Blue : Neon Killer Whale")
+-- ESPSection:AddLabel("Orange : Hammerhead Shark")
+
 ESPSection:AddToggle({
 	Name = "ESP",
 	Default = settings.espToggle,
@@ -167,13 +174,6 @@ ESPSection:AddToggle({
 		save_settings()
 	end
 })
-
-ESPSection:AddLabel("Green : Great White Shark")
-ESPSection:AddLabel("Yellow : Big Great White Shark")
-ESPSection:AddLabel("Red : Neon Great White Shark")
-ESPSection:AddLabel("Orange : Hammerhead Shark")
-ESPSection:AddLabel("Blue : Killer Whale")
-ESPSection:AddLabel("Purple : Neon Killer Whale")
 --#endregion
 
 --#region [BoatConfig] Boat
@@ -416,186 +416,104 @@ coroutine.resume(coroutine.create(function()
 end))
 --#endregion
 
---#region ESP
+--#region ESP All
+local ESP = loadstring(game:HttpGet("https://kiriot22.com/releases/ESP.lua"))()
+ESP.Players = false
+ESP.Boxes = true
+ESP.Names = true
+
+
+local isAllOn = false
 coroutine.resume(coroutine.create(function()
 	while task.wait(0.1) do
+		ESP:Toggle(settings.espToggle)
 		if settings.espToggle == true then
-			for i, v in pairs(game.Workspace:GetChildren()) do
-				if v:FindFirstChild("Health") then
-					if v.Name == "KillerWhale" then
-						if not v.Hitbox:FindFirstChild("ESP") then
-							local BillboardGui = Instance.new("BillboardGui")
-							local TextLabel = Instance.new("TextLabel")
-							BillboardGui.Parent = v.Hitbox
-							BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-							BillboardGui.Active = true
-							BillboardGui.Name = "ESP"
-							BillboardGui.AlwaysOnTop = true
-							BillboardGui.LightInfluence = 1.000
-							BillboardGui.Size = UDim2.new(0, 200, 0, 50)
-							BillboardGui.StudsOffset = Vector3.new(0, 0, 0)
-							TextLabel.Parent = BillboardGui
-							TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-							TextLabel.BackgroundTransparency = 1.000
-							TextLabel.Size = UDim2.new(0, 10, 0, 50)
-							TextLabel.Font = Enum.Font.GothamBold
-							TextLabel.Text = "*"
-							TextLabel.TextColor3 = Color3.fromRGB(0, 89, 255)
-							TextLabel.TextScaled = true
-							TextLabel.TextSize = 0.001
-							TextLabel.TextStrokeTransparency = 0.000
-							TextLabel.TextWrapped = true
-						end
-					elseif v.Name == "NeonKillerWhale" then
-							if not v.Hitbox:FindFirstChild("ESP") then
-								local BillboardGui = Instance.new("BillboardGui")
-								local TextLabel = Instance.new("TextLabel")
-								BillboardGui.Parent = v.Hitbox
-								BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-								BillboardGui.Active = true
-								BillboardGui.Name = "ESP"
-								BillboardGui.AlwaysOnTop = true
-								BillboardGui.LightInfluence = 1.000
-								BillboardGui.Size = UDim2.new(0, 200, 0, 50)
-								BillboardGui.StudsOffset = Vector3.new(0, 0, 0)
-								TextLabel.Parent = BillboardGui
-								TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-								TextLabel.BackgroundTransparency = 1.000
-								TextLabel.Size = UDim2.new(0, 10, 0, 50)
-								TextLabel.Font = Enum.Font.GothamBold
-								TextLabel.Text = "*"
-								TextLabel.TextColor3 = Color3.fromRGB(85, 0, 255)
-								TextLabel.TextScaled = true
-								TextLabel.TextSize = 0.001
-								TextLabel.TextStrokeTransparency = 0.000
-								TextLabel.TextWrapped = true
-							end
-					elseif v.Name == "GreatWhiteShark" then
-						if not v.Hitbox:FindFirstChild("ESP") then
-							local BillboardGui = Instance.new("BillboardGui")
-							local TextLabel = Instance.new("TextLabel")
-							BillboardGui.Parent = v.Hitbox
-							BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-							BillboardGui.Active = true
-							BillboardGui.Name = "ESP"
-							BillboardGui.AlwaysOnTop = true
-							BillboardGui.LightInfluence = 1.000
-							BillboardGui.Size = UDim2.new(0, 200, 0, 50)
-							BillboardGui.StudsOffset = Vector3.new(0, 2.5, 0)
-							TextLabel.Parent = BillboardGui
-							TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-							TextLabel.BackgroundTransparency = 1.000
-							TextLabel.Size = UDim2.new(0, 10, 0, 50)
-							TextLabel.Font = Enum.Font.GothamBold
-							TextLabel.Text = "*"
-							TextLabel.TextColor3 = Color3.fromRGB(0, 255, 68)
-							TextLabel.TextScaled = true
-							TextLabel.TextSize = 0.500
-							TextLabel.TextStrokeTransparency = 0.000
-							TextLabel.TextWrapped = true
-						end
-					elseif v.Name == "HammerheadShark" then
-						if not v.Hitbox:FindFirstChild("ESP") then
-							local BillboardGui = Instance.new("BillboardGui")
-							local TextLabel = Instance.new("TextLabel")
-							BillboardGui.Parent = v.Hitbox
-							BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-							BillboardGui.Active = true
-							BillboardGui.Name = "ESP"
-							BillboardGui.AlwaysOnTop = true
-							BillboardGui.LightInfluence = 1.000
-							BillboardGui.Size = UDim2.new(0, 200, 0, 50)
-							BillboardGui.StudsOffset = Vector3.new(0, 2.5, 0)
-							TextLabel.Parent = BillboardGui
-							TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-							TextLabel.BackgroundTransparency = 1.000
-							TextLabel.Size = UDim2.new(0, 10, 0, 50)
-							TextLabel.Font = Enum.Font.GothamBold
-							TextLabel.Text = "*"
-							TextLabel.TextColor3 = Color3.fromRGB(255, 111, 0)
-							TextLabel.TextScaled = true
-							TextLabel.TextSize = 0.500
-							TextLabel.TextStrokeTransparency = 0.000
-							TextLabel.TextWrapped = true
-						end
-					elseif v.Name == "NeonGreatWhiteShark" then
-						if not v.Hitbox:FindFirstChild("ESP") then
-							local BillboardGui = Instance.new("BillboardGui")
-							local TextLabel = Instance.new("TextLabel")
-							BillboardGui.Parent = v.Hitbox
-							BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-							BillboardGui.Active = true
-							BillboardGui.Name = "ESP"
-							BillboardGui.AlwaysOnTop = true
-							BillboardGui.LightInfluence = 1.000
-							BillboardGui.Size = UDim2.new(0, 200, 0, 50)
-							BillboardGui.StudsOffset = Vector3.new(0, 2.5, 0)
-							TextLabel.Parent = BillboardGui
-							TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-							TextLabel.BackgroundTransparency = 1.000
-							TextLabel.Size = UDim2.new(0, 10, 0, 50)
-							TextLabel.Font = Enum.Font.GothamBold
-							TextLabel.Text = "*"
-							TextLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-							TextLabel.TextScaled = true
-							TextLabel.TextSize = 0.500
-							TextLabel.TextStrokeTransparency = 0.000
-							TextLabel.TextWrapped = true
-						end
-					elseif v.Name == "BigGreatWhiteShark" then
-						if not v.Hitbox:FindFirstChild("ESP") then
-							local BillboardGui = Instance.new("BillboardGui")
-							local TextLabel = Instance.new("TextLabel")
-							BillboardGui.Parent = v.Hitbox
-							BillboardGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-							BillboardGui.Active = true
-							BillboardGui.Name = "ESP"
-							BillboardGui.AlwaysOnTop = true
-							BillboardGui.LightInfluence = 1.000
-							BillboardGui.Size = UDim2.new(0, 200, 0, 50)
-							BillboardGui.StudsOffset = Vector3.new(0, 2.5, 0)
-							TextLabel.Parent = BillboardGui
-							TextLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-							TextLabel.BackgroundTransparency = 1.000
-							TextLabel.Size = UDim2.new(0, 10, 0, 50)
-							TextLabel.Font = Enum.Font.GothamBold
-							TextLabel.Text = "*"
-							TextLabel.TextColor3 = Color3.fromRGB(255, 221, 0)
-							TextLabel.TextScaled = true
-							TextLabel.TextSize = 0.500
-							TextLabel.TextStrokeTransparency = 0.000
-							TextLabel.TextWrapped = true
-						end
-					end
-				end
+			if isAllOn then
+				isAllOn = true
+				ESP:AddObjectListener(Workspace, {
+					Name = "GreatWhiteShark",
+					CustomName = "GreatWhiteShark",
+					Color = Color3.fromRGB(0, 255, 68),
+					IsEnabled = "GreatWhiteShark"
+				})
+				ESP:AddObjectListener(Workspace, {
+					Name = "BigGreatWhiteShark",
+					CustomName = "BigGreatWhiteShark",
+					Color = Color3.fromRGB(255, 221, 0),
+					IsEnabled = "BigGreatWhiteShark"
+				})
+				ESP:AddObjectListener(Workspace, {
+					Name = "NeonGreatWhiteShark",
+					CustomName = "NeonGreatWhiteShark",
+					Color = Color3.fromRGB(255, 0, 0),
+					IsEnabled = "NeonGreatWhiteShark"
+				})
+				ESP:AddObjectListener(Workspace, {
+					Name = "KillerWhale",
+					CustomName = "KillerWhale",
+					Color = Color3.fromRGB(0, 89, 255),
+					IsEnabled = "KillerWhale"
+				})
+				ESP:AddObjectListener(Workspace, {
+					Name = "NeonKillerWhale",
+					CustomName = "NeonKillerWhale",
+					Color = Color3.fromRGB(0, 255, 217),
+					IsEnabled = "NeonKillerWhale"
+				})
+				ESP:AddObjectListener(Workspace, {
+					Name = "HammerheadShark",
+					CustomName = "HammerheadShark",
+					Color = Color3.fromRGB(255, 111, 0),
+					IsEnabled = "HammerheadShark"
+				})
 			end
 		elseif settings.espToggle == false then
-			for i, v in pairs(game.Workspace:GetChildren()) do
-				if v:FindFirstChild("Health") then
-					if v.Name == "KillerWhale" then
-						if v.Hitbox:FindFirstChild("ESP") then
-							v.Hitbox.ESP:Destroy()
-						end
-					elseif v.Name == "GreatWhiteShark" then
-						if v.Hitbox:FindFirstChild("ESP") then
-							v.Hitbox.ESP:Destroy()
-						end
-					elseif v.Name == "HammerheadShark" then
-						if v.Hitbox:FindFirstChild("ESP") then
-							v.Hitbox.ESP:Destroy()
-						end
-					elseif v.Name == "NeonGreatWhiteShark" then
-						if v.Hitbox:FindFirstChild("ESP") then
-							v.Hitbox.ESP:Destroy()
-						end
-					elseif v.Name == "BigGreatWhiteShark" then
-						if v.Hitbox:FindFirstChild("ESP") then
-							v.Hitbox.ESP:Destroy()
-						end
-					end
-				end
+			if not isAllOn then
+				isAllOn = false
+				ESP:AddObjectListener(Workspace, {
+					Name = "GreatWhiteShark",
+					CustomName = "GreatWhiteShark",
+					Color = Color3.fromRGB(0, 255, 68),
+					IsEnabled = "GreatWhiteShark"
+				})
+				ESP:AddObjectListener(Workspace, {
+					Name = "BigGreatWhiteShark",
+					CustomName = "BigGreatWhiteShark",
+					Color = Color3.fromRGB(255, 221, 0),
+					IsEnabled = "BigGreatWhiteShark"
+				})
+				ESP:AddObjectListener(Workspace, {
+					Name = "NeonGreatWhiteShark",
+					CustomName = "NeonGreatWhiteShark",
+					Color = Color3.fromRGB(255, 0, 0),
+					IsEnabled = "NeonGreatWhiteShark"
+				})
+				ESP:AddObjectListener(Workspace, {
+					Name = "KillerWhale",
+					CustomName = "KillerWhale",
+					Color = Color3.fromRGB(0, 89, 255),
+					IsEnabled = "KillerWhale"
+				})
+				ESP:AddObjectListener(Workspace, {
+					Name = "NeonKillerWhale",
+					CustomName = "NeonKillerWhale",
+					Color = Color3.fromRGB(0, 255, 217),
+					IsEnabled = "NeonKillerWhale"
+				})
+				ESP:AddObjectListener(Workspace, {
+					Name = "HammerheadShark",
+					CustomName = "HammerheadShark",
+					Color = Color3.fromRGB(255, 111, 0),
+					IsEnabled = "HammerheadShark"
+				})
 			end
 		end
+		ESP.GreatWhiteShark = settings.espToggle
+		ESP.BigGreatWhiteShark = settings.espToggle
+		ESP.NeonGreatWhiteShark = settings.espToggle
+		ESP.KillerWhale = settings.espToggle
+		ESP.NeonKillerWhale = settings.espToggle
+		ESP.HammerheadShark = settings.espToggle
 	end
 end))
 --#endregion
