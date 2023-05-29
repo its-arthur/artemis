@@ -20,16 +20,26 @@ local PlayerHumanoidRootPart = PlayerCharacter.HumanoidRootPart
 
 --#region Init Data
 local SCRIPTNAME = "אַרטהור"
-local ISLANDLIST = { "Port Jackson", "Ancient Shores", "Shadow Isles", "Pharaoh's Dunes", "Eruption Island",
+local ISLANDLIST = {"Port Jackson", "Ancient Shores", "Shadow Isles", "Pharaoh's Dunes", "Eruption Island",
 	"Monster's Borough" }
 local SHOPLIST = { "Boat Store", "Raygan's Tavern", "Supplies Store", "Pets Store" }
-local MAINCOLOR = Color3.fromRGB(49, 0, 128)
-
-
-
-local folder_name = "ArthurHub"
+local SEAMONLIST = { "GreatWhiteShark", "BigGreatWhiteShark", "NeonGreatWhiteShark", "KillerWhale", "NeonKillerWhale", "HammerheadShark"}
+local folder_name = "artemis"
 local file_name = PlayerLocal.Name .. "_settings.json"
 settings = {}
+
+local PlaceID = game.PlaceId
+local AllIDs = {}
+local foundAnything = ""
+local actualHour = os.date("!*t").hour
+local Deleted = false
+local File = pcall(function()
+    AllIDs = game:GetService('HttpService'):JSONDecode(readfile("NotSameServers.json"))
+end)
+if not File then
+    table.insert(AllIDs, actualHour)
+    writefile("NotSameServers.json", game:GetService('HttpService'):JSONEncode(AllIDs))
+end
 
 function save_settings()
 	if not isfolder(folder_name) then
@@ -55,6 +65,12 @@ function read_settings()
 		settings.playerJumpH = 50
 		settings.playerMovementToggle = false
 		settings.espToggle = false
+        settings.espGreatWhiteShark = false
+        settings.espBigGreatWhiteShark = false
+        settings.espNeonGreatWhiteShark = false
+        settings.espKillerWhale = false
+        settings.espNeonKillerWhale = false
+        settings.espHammerheadShark = false
 		save_settings()
 		return read_settings()
 	end
@@ -68,123 +84,128 @@ settings = read_settings()
 --------------------------------------------------
 
 --#region UI & Tab
-local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/its-arthur/artemis/main/Libs/Orion.lua')))()
-local Window = OrionLib:MakeWindow({
-	Name = SCRIPTNAME,
-	HidePremium = false,
-	SaveConfig = true,
-	ConfigFolder = "OrionTest",
-	IntroEnabled = true,
-	IntroText = "סטאַרטינג סקריפּט"
-})
-local Main = Window:MakeTab({
-	Name = "🚀ㅤ|ㅤMain",
-	Icon = "",
-	PremiumOnly = false
+local repo = 'https://raw.githubusercontent.com/its-arthur/artemis/main/Libs/'
+
+local Library = loadstring(game:HttpGet(repo .. 'Library.lua'))()
+local ThemeManager = loadstring(game:HttpGet(repo .. 'addons/ThemeManager.lua'))()
+local SaveManager = loadstring(game:HttpGet(repo .. 'addons/SaveManager.lua'))()
+
+local Window = Library:CreateWindow({
+    -- Set Center to true if you want the menu to appear in the center
+    -- Set AutoShow to true if you want the menu to appear when it is created
+    -- Position and Size are also valid options here
+    -- but you do not need to define them unless you are changing them :)
+
+    Title = SCRIPTNAME,
+    Center = true,
+    AutoShow = true,
+    TabPadding = 8,
+    MenuFadeTime = 0.2
 })
 
-local Boat = Window:MakeTab({
-	Name = "🚤ㅤ|ㅤBoat",
-	Icon = "",
-	PremiumOnly = false
+local Tabs = {
+    -- Creates a new tab titled Main
+    ['Main'] = Window:AddTab('Main'),
+    ['Misc'] = Window:AddTab('Misc'),
+    ['UI Settings'] = Window:AddTab('UI Settings'),
+    ['Test'] = Window:AddTab('Test'),
+}
+
+--#endregion
+
+--#region [Main] Sell
+local autoSell = Tabs['Main']:AddLeftGroupbox('Sell Section')
+
+autoSell:AddLabel('Sell Keybind :'):AddKeyPicker('Sell', {
+    Default = 'Q',
+    SyncToggleState = false,
+
+    Mode = 'Hold', -- Modes: Always, Toggle, Hold
+
+    Text = 'Auto sell Type :',
+    NoUI = false,
 })
 
-local Teleport = Window:MakeTab({
-	Name = "🌍ㅤ|ㅤTeleport",
-	Icon = "",
-	PremiumOnly = false
+autoSell:AddSlider('autoSellDelay', {
+    Text = 'Delay :',
+    Default = settings.autoSellDelay,
+    Min = 0,
+    Max = 5,
+    Rounding = 1,
+    Compact = false,
 })
 
-local Players = Window:MakeTab({
-	Name = "👤ㅤ|ㅤPlayers",
-	Icon = "",
-	PremiumOnly = false
+Options.autoSellDelay:OnChanged(function()
+    settings.autoSellDelay = Options.autoSellDelay.Value
+	save_settings()
+end)
+--#endregion
+
+--#region [Main] Player Config
+local playerConfig = Tabs['Main']:AddLeftGroupbox('Player Config')
+
+playerConfig:AddSlider('playerSpeed', {
+    Text = 'Walk Speed :',
+    Default = settings.playerSpeed,
+    Min = 25,
+    Max = 100,
+    Rounding = 1,
+    Compact = false,
 })
 
-local Misc = Window:MakeTab({
-	Name = "🔧ㅤ|ㅤMisc",
-	Icon = "",
-	PremiumOnly = false
+playerConfig:AddSlider('playerJumpH', {
+    Text = 'Jump Height :',
+    Default = settings.playerJumpH,
+    Min = 50,
+    Max = 100,
+    Rounding = 1,
+    Compact = false,
 })
 
-local Test = Window:MakeTab({
-	Name = "⚠️ㅤ|ㅤTest",
-	Icon = "",
-	PremiumOnly = false
+playerConfig:AddToggle('playerMovementToggle', {
+    Text = 'Enable Player Movement',
+    Default = settings.playerMovementToggle,
+})
+
+playerConfig:AddButton({
+    Text = 'Infinite Jump',
+    Func = function()
+        game:GetService("UserInputService").JumpRequest:connect(function()
+            game:GetService "Players".LocalPlayer.Character:FindFirstChildOfClass 'Humanoid':ChangeState("Jumping")
+        end)
+    end,
+    DoubleClick = false,
+})
+
+playerConfig:AddLabel('Warning : Infinite Jump can not\nbe turn off.', true)
+
+--#endregion
+
+--#region [Main] Boat Config
+local boatConfig = Tabs['Main']:AddLeftGroupbox('Boat Config')
+
+boatConfig:AddSlider('boatSpeed', {
+    Text = 'Boat Speed :',
+    Default = settings.boatSpeed,
+    Min = 15,
+    Max = 190,
+    Rounding = 1,
+    Compact = false,
+})
+
+boatConfig:AddToggle('boatSpeedToggle', {
+    Text = 'Enable Boat Speed',
+    Default = settings.boatSpeedToggle,
 })
 --#endregion
 
---#region [AutoFish] Main
-local AutoFishSection = Main:AddSection({
-	Name = "Auto Fish Section"
-})
---#endregion
+--#region [Main] Teleport
+local teleportList = Tabs['Main']:AddRightGroupbox('Teleport')
 
---#region [Sell] Main
-local SellSection = Main:AddSection({
-	Name = "Sell All"
-})
-
-SellSection:AddBind({
-	Name = "Sell All",
-	Default = Enum.KeyCode.Q,
-	Hold = false,
-	Callback = function()
-		GetDataStreams.processGameItemSold:InvokeServer("SellEverything")
-		sellAllCallBack()
-	end
-})
-
-local SellSection = Main:AddSection({
-	Name = "Auto Sell All"
-})
-
-SellSection:AddSlider({
-	Name = "Auto Sell Delay",
-	Min = 0,
-	Max = 10,
-	Default = settings.autoSellDelay,
-	Color = MAINCOLOR,
-	Increment = 1,
-	ValueName = "seconds",
-	Callback = function(Value)
-		settings.autoSellDelay = Value
-		save_settings()
-	end
-})
---#endregion
-
---#region [ESP] Main
-local ESPSection = Main:AddSection({
-	Name = "ESP"
-})
-
--- ESPSection:AddLabel("Green : Great White Shark")
--- ESPSection:AddLabel("Yellow : Big Great White Shark")
--- ESPSection:AddLabel("Red : Neon Great White Shark")
--- ESPSection:AddLabel("Blue : Killer Whale")
--- ESPSection:AddLabel("Light Blue : Neon Killer Whale")
--- ESPSection:AddLabel("Orange : Hammerhead Shark")
-
-ESPSection:AddToggle({
-	Name = "ESP",
-	Default = settings.espToggle,
-	Callback = function(Value)
-		settings.espToggle = Value
-		save_settings()
-	end
-})
---#endregion
-
---#region [BoatConfig] Boat
-local BoatConfig = Boat:AddSection({
-	Name = "Boat Config"
-})
-
-BoatConfig:AddButton({
-	Name = "Teleport to boat",
-	Callback = function()
-		-- repeat task.wait() until game.Workspace:FindFirstChild(("%s's Boat"):format(game.Players.LocalPlayer.Name)) 
+teleportList:AddButton({
+    Text = 'Teleport to Boat',
+    Func = function()
+        -- repeat task.wait() until game.Workspace:FindFirstChild(("%s's Boat"):format(game.Players.LocalPlayer.Name)) 
 
 		for i, v in pairs(game.Workspace:GetChildren()) do
 			if v.Name == (PlayerLocal.Name .. "'s Boat") then
@@ -192,213 +213,261 @@ BoatConfig:AddButton({
 				boatTeleportCallBack(PlayerLocal.Name .. "'s Boat")
 			end
 		end
-	end
+    end,
+    DoubleClick = false,
 })
 
-BoatConfig:AddSlider({
-	Name = "Boat Speed",
-	Min = 65,
-	Max = 190,
-	Default = settings.boatSpeed,
-	Color = MAINCOLOR,
-	Increment = 1,
-	ValueName = "",
-	Callback = function(Value)
-		settings.boatSpeed = Value
-		save_settings()
-	end
-})
-
-BoatConfig:AddToggle({
-	Name = "Enable Boat Speed",
-	Default = settings.boatSpeedToggle,
-	Callback = function(Value)
-		settings.boatSpeedToggle = Value
-		save_settings()
-	end
-})
-
---#endregion
-
---#region [IslandTeleport] Teleport
-local TeleportToIsland = Teleport:AddSection({
-	Name = "Island List"
-})
-
-TeleportToIsland:AddDropdown({
-	Name = "Select Island",
-	Default = "None",
-	Options = ISLANDLIST,
-	Callback = function(Value)
-		locationSelected = Value
-		if locationSelected == "Port Jackson" then
-			teleport(CFrame.new(1.8703980445862, 53.57190322876, -188.37982177734))
-		elseif locationSelected == "Ancient Shores" then
-			teleport(CFrame.new(-2436.431640625, 43.564971923828, -1683.4526367188))
-		elseif locationSelected == "Shadow Isles" then
-			teleport(CFrame.new(2196.9926757812, 43.491630554199, -2216.4543457031))
-		elseif locationSelected == "Pharaoh's Dunes" then
-			teleport(CFrame.new(-4142.74609375, 46.71378326416, 262.05679321289))
-		elseif locationSelected == "Eruption Island" then
-			teleport(CFrame.new(3022.9311523438, 52.347640991211, 1323.74609375))
-		elseif locationSelected == "Monster's Borough" then
-			teleport(CFrame.new(-3211.9047851562, 41.850345611572, 2735.306640625))
-		end
-		islandTeleportCallBack(locationSelected)
-	end
-})
---#endregion
-
---#region [SunkenShipTeleport] Teleport
-local TeleportToSunkenShip = Teleport:AddSection({
-	Name = "Sunken Ship"
-})
-
-TeleportToSunkenShip:AddButton({
-	Name = "Teleport to Sunken Ship",
-	Callback = function()
-		for i, v in pairs(game.Workspace:GetChildren()) do
+teleportList:AddButton({
+    Text = 'Teleport to Sunken Ship',
+    Func = function()
+        for i, v in pairs(game.Workspace:GetChildren()) do
 			if string.find(v.Name, "ShipModel") then
 				teleport(v.HitBox.CFrame)
 				sunkenShipCallBack(v.Name)
 				break
 			end
 		end
-	end
+    end,
+    DoubleClick = false,
+})
+
+teleportList:AddDropdown('islandTeleport', {
+    Values = ISLANDLIST,
+    Default = "--", -- number index of the value / string
+    Multi = false, -- true / false, allows multiple choices to be selected
+
+    Text = 'Island List',
+})
+
+teleportList:AddDropdown('shopTeleport', {
+    Values = SHOPLIST,
+    Default = "--", -- number index of the value / string
+    Multi = false, -- true / false, allows multiple choices to be selected
+
+    Text = 'Shop List',
+})
+
+teleportList:AddDropdown('playerTeleportList', {
+    SpecialType = 'Player',
+    Text = 'Player List',
+
+    Callback = function(Value)
+        playerSelected = Value
+    end
+})
+
+teleportList:AddButton({
+    Text = 'Teleport to Player',
+    Func = function()
+        for i,v in pairs(game.Players:GetPlayers()) do
+            if playerSelected ~= nil and playerSelected ~= PlayerLocal.name then
+                if string.lower(v.DisplayName) == string.lower(playerSelected) then
+                    PlayerHumanoidRootPart.CFrame = v.Character.HumanoidRootPart.CFrame                
+                end
+            end
+        end
+    end,
+    DoubleClick = false,
+})
+
+
+
+--#endregion
+
+--#region [Main] ESP
+local espConfig = Tabs['Main']:AddRightGroupbox('ESP')
+
+espConfig:AddToggle('espToggle', {
+    Text = 'Enable ESP',
+    Default = settings.espToggle,
+
+    Callback = function(Value)
+        settings.espToggle = Value
+        print(settings.espToggle)
+    end
+})
+
+espConfig:AddDropdown('seaMonsterList', {
+    Text = "Sea Monster List",
+    Values = SEAMONLIST,
+    Default = "--", -- number index of the value / string
+    Multi = true, -- true / false, allows multiple choices to be selected
+})
+
+--#endregion
+
+--#region [Misc] serverMisc
+local serverMisc = Tabs['Misc']:AddLeftGroupbox('Server')
+
+serverMisc:AddButton({
+    Text = 'Rejoin',
+    Func = function()
+        game:GetService("TeleportService"):Teleport(2866967438, game.Players.LocalPlayer)
+    end,
+    DoubleClick = false,
+})
+
+serverMisc:AddButton({
+    Text = 'Switch Server',
+    Func = function()
+        switchServer()
+    end,
+    DoubleClick = false,
 })
 --#endregion
 
---#region [ShopTeleport] Teleport
-local TeleportToShop = Teleport:AddSection({
-	Name = "Shop List"
-})
+--#region [Misc] toolsMisc
+local toolsMisc = Tabs['Misc']:AddRightGroupbox('Tools')
 
-TeleportToShop:AddDropdown({
-	Name = "Select Shop",
-	Default = "None",
-	Options = SHOPLIST,
-	Callback = function(Value)
-		locationSelected = Value
-		if locationSelected == "Boat Store" then
-			GetDataStreams.EnterDoor:InvokeServer("BoatShopInterior", "Inside")
-		elseif locationSelected == "Raygan's Tavern" then
-			GetDataStreams.EnterDoor:InvokeServer("TavernInterior", "Inside")
-		elseif locationSelected == "Supplies Store" then
-			GetDataStreams.EnterDoor:InvokeServer("SuppliesStoreInterior", "MainEntrance")
-		elseif locationSelected == "Pets Store" then
-			GetDataStreams.EnterDoor:InvokeServer("PetShop", "MainEntrance")
-		end
-		shopTeleportCallBack(locationSelected)
-	end
-})
---endregion
-
---#region [Players] Players
-Players:AddSlider({
-	Name = "Walk Speed",
-	Min = 30,
-	Max = 100,
-	Default = settings.playerSpeed,
-	Color = MAINCOLOR,
-	Increment = 1,
-	ValueName = "",
-	Callback = function(Value)
-		settings.playerSpeed = Value
-		save_settings()
-	end
-})
-
-Players:AddSlider({
-	Name = "Jump Height",
-	Min = 50,
-	Max = 100,
-	Default = settings.playerJumpH,
-	Color = MAINCOLOR,
-	Increment = 1,
-	ValueName = "",
-	Callback = function(Value)
-		settings.playerJumpH = Value
-		save_settings()
-	end
-})
-
-Players:AddToggle({
-	Name = "Enable Player Movement",
-	Default = settings.playerMovementToggle,
-	Callback = function(Value)
-		settings.playerMovementToggle = Value
-		save_settings()
-	end
-})
-
-local infiniteJumpStatus = Players:AddParagraph("Infinite Jump Status", "Warning : Infinite Jump can not be turn off.")
-
-Players:AddButton({
-	Name = "Infinite Jump",
-	Default = false,
-	Callback = function(Value)
-		Value = true
-		infiniteJump(Value)
-		infiniteJumpStatus:Set("Infinite Jump has been activated.")
-	end
-})
---#endregion
-
---#region [Misc] Misc
-Misc:AddButton({
-	Name = "Rejoin",
-	Callback = function()
-		game:GetService("TeleportService"):Teleport(2866967438, game.Players.LocalPlayer)
-	end
-})
-Misc:AddButton({
-	Name = "Infinite Yield",
-	Callback = function()
+toolsMisc:AddButton({
+    Text = 'Infinite Yield',
+    Func = function()
 		loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))();
-	end
-})
-Misc:AddButton({
-	Name = "Delete UI",
-	Callback = function()
-		OrionLib:Destroy()
-	end
+    end,
+    DoubleClick = false,
 })
 --#endregion
 
---#region Test
-Test:AddButton({
-	Name = "Bite",
-	Callback = function()
-		GetDataStreams.FishBiting:InvokeServer()
-	end
+--#region [UI Settings] Menu
+local MenuGroup = Tabs['UI Settings']:AddLeftGroupbox('Menu')
+
+-- Example of dynamically-updating watermark with common traits (fps and ping)
+local FrameTimer = tick()
+local FrameCounter = 0;
+local FPS = 60;
+
+local WatermarkConnection = game:GetService('RunService').RenderStepped:Connect(function()
+    FrameCounter += 1;
+
+    if (tick() - FrameTimer) >= 1 then
+        FPS = FrameCounter;
+        FrameTimer = tick();
+        FrameCounter = 0;
+    end;
+
+    Library:SetWatermark(('%s | %s fps | %s ms'):format(
+        SCRIPTNAME,
+        math.floor(FPS),
+        math.floor(game:GetService('Stats').Network.ServerStatsItem['Data Ping']:GetValue())
+    ));
+end);
+
+Library.KeybindFrame.Visible = true; -- todo: add a function for this
+
+Library:OnUnload(function()
+    WatermarkConnection:Disconnect()
+
+    print('Unloaded!')
+    Library.Unloaded = true
+end)
+
+MenuGroup:AddButton('Unload', function() Library:Unload() end)
+MenuGroup:AddLabel('Menu bind'):AddKeyPicker('MenuKeybind', { Default = 'End', NoUI = true, Text = 'Menu keybind' })
+
+Library.ToggleKeybind = Options.MenuKeybind -- Allows you to have a custom keybind for the menu
+
+ThemeManager:SetLibrary(Library)
+SaveManager:SetLibrary(Library)
+
+SaveManager:IgnoreThemeSettings()
+
+SaveManager:SetIgnoreIndexes({ 'MenuKeybind' })
+
+ThemeManager:SetFolder('artemis')
+SaveManager:SetFolder('artemis/specific-game')
+
+SaveManager:BuildConfigSection(Tabs['UI Settings'])
+
+ThemeManager:ApplyToTab(Tabs['UI Settings'])
+
+SaveManager:LoadAutoloadConfig()
+--#endregion
+
+--#region [Test] test
+local test = Tabs['Test']:AddLeftGroupbox('Test')
+
+test:AddButton({
+    Text = 'Bite',
+    Func = function()
+        GetDataStreams.FishBiting:InvokeServer()
+    end,
+    DoubleClick = false,
 })
 
-Test:AddButton({
-	Name = "Catch",
-	Callback = function()
-		GetDataStreams.FishCaught:FireServer()
-	end
+test:AddButton({
+    Text = 'Catch',
+    Func = function()
+        GetDataStreams.FishCaught:FireServer()
+    end,
+    DoubleClick = false,
 })
-
-
 --#endregion
 
 --------------------------------------------------
 ------------------ Function --------------------
 --------------------------------------------------
 
---#region Sell All
+--#region [autoSell] autoSell
+task.spawn(function()
+    while true do
+        wait(settings.autoSellDelay)
+        local state = Options.Sell:GetState()
+        if state then
+            print("Sell")
+            GetDataStreams.processGameItemSold:InvokeServer("SellEverything")
+        end
+
+        if Library.Unloaded then break end
+    end
+end)
+--#endregion
+
+--#region [playerConfig] playerSpeed
+Options.playerSpeed:OnChanged(function()
+    settings.playerSpeed = Options.playerSpeed.Value
+	save_settings()
+end)
+--#endregion
+
+--#region [playerConfig] playerJumpH
+Options.playerJumpH:OnChanged(function()
+    settings.playerJumpH = Options.playerJumpH.Value
+	save_settings()
+end)
+--#endregion
+
+--#region [playerConfig] playerMovementToggle
+Toggles.playerMovementToggle:OnChanged(function()
+    settings.playerMovementToggle = Toggles.playerMovementToggle.Value
+	save_settings()
+end)
+
 coroutine.resume(coroutine.create(function()
-	while task.wait(settings.autoSellDelay) do
-		if settings.autoSellDelay > 0 then
-			print(settings.autoSellDelay)
-			GetDataStreams.processGameItemSold:InvokeServer("SellEverything")
+	while task.wait(0.1) do
+		if settings.playerMovementToggle then
+			PlayerHumanoid.WalkSpeed = settings.playerSpeed
+			PlayerHumanoid.JumpPower = settings.playerJumpH
+		else
+			PlayerHumanoid.WalkSpeed = 30
+			PlayerHumanoid.JumpPower = 50
 		end
 	end
 end))
 --#endregion
 
---#region BoatSpeed
+--#region [boatConfig] boatSpeed
+Options.boatSpeed:OnChanged(function()
+    settings.boatSpeed = Options.boatSpeed.Value
+    save_settings()
+end)
+--#endregion
+
+--#region [boatConfig] boatSpeedToggle
+Toggles.boatSpeedToggle:OnChanged(function()
+    settings.boatSpeedToggle = Toggles.boatSpeedToggle.Value
+    save_settings()
+end)
+
 coroutine.resume(coroutine.create(function()
 	while task.wait(0.1) do
 		if settings.boatSpeedToggle then
@@ -418,109 +487,7 @@ coroutine.resume(coroutine.create(function()
 end))
 --#endregion
 
---#region ESP All
-local ESP = loadstring(game:HttpGet("https://kiriot22.com/releases/ESP.lua"))()
-ESP.Players = false
-ESP.Boxes = true
-ESP.Names = true
-
-
-local isAllOn = false
-coroutine.resume(coroutine.create(function()
-	while task.wait(0.1) do
-		ESP:Toggle(settings.espToggle)
-		if settings.espToggle == true then
-			if isAllOn then
-				isAllOn = true
-				ESP:AddObjectListener(Workspace, {
-					Name = "GreatWhiteShark",
-					CustomName = "GreatWhiteShark",
-					Color = Color3.fromRGB(0, 255, 68),
-					IsEnabled = "GreatWhiteShark"
-				})
-				ESP:AddObjectListener(Workspace, {
-					Name = "BigGreatWhiteShark",
-					CustomName = "BigGreatWhiteShark",
-					Color = Color3.fromRGB(255, 221, 0),
-					IsEnabled = "BigGreatWhiteShark"
-				})
-				ESP:AddObjectListener(Workspace, {
-					Name = "NeonGreatWhiteShark",
-					CustomName = "NeonGreatWhiteShark",
-					Color = Color3.fromRGB(255, 0, 0),
-					IsEnabled = "NeonGreatWhiteShark"
-				})
-				ESP:AddObjectListener(Workspace, {
-					Name = "KillerWhale",
-					CustomName = "KillerWhale",
-					Color = Color3.fromRGB(0, 89, 255),
-					IsEnabled = "KillerWhale"
-				})
-				ESP:AddObjectListener(Workspace, {
-					Name = "NeonKillerWhale",
-					CustomName = "NeonKillerWhale",
-					Color = Color3.fromRGB(0, 255, 217),
-					IsEnabled = "NeonKillerWhale"
-				})
-				ESP:AddObjectListener(Workspace, {
-					Name = "HammerheadShark",
-					CustomName = "HammerheadShark",
-					Color = Color3.fromRGB(255, 111, 0),
-					IsEnabled = "HammerheadShark"
-				})
-			end
-		elseif settings.espToggle == false then
-			if not isAllOn then
-				isAllOn = false
-				ESP:AddObjectListener(Workspace, {
-					Name = "GreatWhiteShark",
-					CustomName = "GreatWhiteShark",
-					Color = Color3.fromRGB(0, 255, 68),
-					IsEnabled = "GreatWhiteShark"
-				})
-				ESP:AddObjectListener(Workspace, {
-					Name = "BigGreatWhiteShark",
-					CustomName = "BigGreatWhiteShark",
-					Color = Color3.fromRGB(255, 221, 0),
-					IsEnabled = "BigGreatWhiteShark"
-				})
-				ESP:AddObjectListener(Workspace, {
-					Name = "NeonGreatWhiteShark",
-					CustomName = "NeonGreatWhiteShark",
-					Color = Color3.fromRGB(255, 0, 0),
-					IsEnabled = "NeonGreatWhiteShark"
-				})
-				ESP:AddObjectListener(Workspace, {
-					Name = "KillerWhale",
-					CustomName = "KillerWhale",
-					Color = Color3.fromRGB(0, 89, 255),
-					IsEnabled = "KillerWhale"
-				})
-				ESP:AddObjectListener(Workspace, {
-					Name = "NeonKillerWhale",
-					CustomName = "NeonKillerWhale",
-					Color = Color3.fromRGB(0, 255, 217),
-					IsEnabled = "NeonKillerWhale"
-				})
-				ESP:AddObjectListener(Workspace, {
-					Name = "HammerheadShark",
-					CustomName = "HammerheadShark",
-					Color = Color3.fromRGB(255, 111, 0),
-					IsEnabled = "HammerheadShark"
-				})
-			end
-		end
-		ESP.GreatWhiteShark = settings.espToggle
-		ESP.BigGreatWhiteShark = settings.espToggle
-		ESP.NeonGreatWhiteShark = settings.espToggle
-		ESP.KillerWhale = settings.espToggle
-		ESP.NeonKillerWhale = settings.espToggle
-		ESP.HammerheadShark = settings.espToggle
-	end
-end))
---#endregion
-
---#region Teleport
+--#region [Teleport] teleportCommand
 function teleport(loc)
 	bLocation = PlayerHumanoidRootPart.CFrame
 	if PlayerHumanoid.Sit then
@@ -529,87 +496,284 @@ function teleport(loc)
 	wait()
 	PlayerHumanoidRootPart.CFrame = loc
 end
-
 --#endregion
 
---#region Notification
-function sellAllCallBack()
-	OrionLib:MakeNotification({
-		Name = "Sell All Fish Successfully",
-		Content = "You have sell everything in you inventory.",
-		Image = "rbxassetid://4483345998",
-		Time = 5
-	})
-end
-
-function boatTeleportCallBack(boatName)
-	OrionLib:MakeNotification({
-		Name = "Teleport to Boat Successfully",
-		Content = "Boat's Name : " .. boatName,
-		Image = "rbxassetid://4483345998",
-		Time = 5
-	})
-end
-
-function islandTeleportCallBack(locationSelected)
-	OrionLib:MakeNotification({
-		Name = "Island Teleport Successfully.",
-		Content = "Location : " .. locationSelected,
-		Image = "rbxassetid://4483345998",
-		Time = 5
-	})
-end
-
-function sunkenShipCallBack(shipModel)
-	if shipModel == "ShipModel5" or shipModel == "ShipModel6" then
-		shipChestCount = 2
-	else
-		shipChestCount = 1
-	end
-	OrionLib:MakeNotification({
-		Name = "Ship Found.",
-		Content = "Chest Total : " .. shipChestCount,
-		Image = "rbxassetid://4483345998",
-		Time = 10
-	})
-end
-
-function shopTeleportCallBack(locationSelected)
-	OrionLib:MakeNotification({
-		Name = "Shop Teleport Successfully.",
-		Content = "Location : " .. locationSelected,
-		Image = "rbxassetid://4483345998",
-		Time = 5
-	})
-end
-
+--region [Teleport] islandTeleport 
+Options.islandTeleport:OnChanged(function()
+    locationSelected = Options.islandTeleport.Value
+    if locationSelected == "Port Jackson" then
+        teleport(CFrame.new(1.8703980445862, 53.57190322876, -188.37982177734))
+    elseif locationSelected == "Ancient Shores" then
+        teleport(CFrame.new(-2436.431640625, 43.564971923828, -1683.4526367188))
+    elseif locationSelected == "Shadow Isles" then
+        teleport(CFrame.new(2196.9926757812, 43.491630554199, -2216.4543457031))
+    elseif locationSelected == "Pharaoh's Dunes" then
+        teleport(CFrame.new(-4142.74609375, 46.71378326416, 262.05679321289))
+    elseif locationSelected == "Eruption Island" then
+        teleport(CFrame.new(3022.9311523438, 52.347640991211, 1323.74609375))
+    elseif locationSelected == "Monster's Borough" then
+        teleport(CFrame.new(-3211.9047851562, 41.850345611572, 2735.306640625))
+    end
+end)
 --#endregion
 
---#region Players Movement
+--#region [Teleport] shopTeleport
+Options.shopTeleport:OnChanged(function()
+    locationSelected = Options.shopTeleport.Value
+    if locationSelected == "Boat Store" then
+        GetDataStreams.EnterDoor:InvokeServer("BoatShopInterior", "Inside")
+    elseif locationSelected == "Raygan's Tavern" then
+        GetDataStreams.EnterDoor:InvokeServer("TavernInterior", "Inside")
+    elseif locationSelected == "Supplies Store" then
+        GetDataStreams.EnterDoor:InvokeServer("SuppliesStoreInterior", "MainEntrance")
+    elseif locationSelected == "Pets Store" then
+        GetDataStreams.EnterDoor:InvokeServer("PetShop", "MainEntrance")
+    end
+end)
+--#endregion
+
+--#region hasValue
+function has_value (tab, val)
+    for index, value in next, tab do
+        if index == val then
+            return true
+        end
+    end
+
+    return false
+end
+--#endregion
+
+--#region [Misc] serverHopCommand
+function TPReturner()
+    local Site;
+    if foundAnything == "" then
+        Site = game.HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100'))
+    else
+        Site = game.HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. PlaceID .. '/servers/Public?sortOrder=Asc&limit=100&cursor=' .. foundAnything))
+    end
+    local ID = ""
+    if Site.nextPageCursor and Site.nextPageCursor ~= "null" and Site.nextPageCursor ~= nil then
+        foundAnything = Site.nextPageCursor
+    end
+    local num = 0;
+    for i,v in pairs(Site.data) do
+        local Possible = true
+        ID = tostring(v.id)
+        if tonumber(v.maxPlayers) > tonumber(v.playing) then
+            for _,Existing in pairs(AllIDs) do
+                if num ~= 0 then
+                    if ID == tostring(Existing) then
+                        Possible = false
+                    end
+                else
+                    if tonumber(actualHour) ~= tonumber(Existing) then
+                        local delFile = pcall(function()
+                            delfile("NotSameServers.json")
+                            AllIDs = {}
+                            table.insert(AllIDs, actualHour)
+                        end)
+                    end
+                end
+                num = num + 1
+            end
+            if Possible == true then
+                table.insert(AllIDs, ID)
+                wait()
+                pcall(function()
+                    writefile("NotSameServers.json", game:GetService('HttpService'):JSONEncode(AllIDs))
+                    wait()
+                    game:GetService("TeleportService"):TeleportToPlaceInstance(PlaceID, ID, game.Players.LocalPlayer)
+                end)
+                wait(4)
+            end
+        end
+    end
+end
+
+function switchServer()
+    while wait() do
+        pcall(function()
+            TPReturner()
+            if foundAnything ~= "" then
+                TPReturner()
+            end
+        end)
+    end
+end
+--#endregion
+
+--#region [ESP] espConfig
+Options.seaMonsterList:OnChanged(function()
+    if has_value(Options.seaMonsterList.Value, 'GreatWhiteShark') then
+        settings.espGreatWhiteShark = true
+    else
+        settings.espGreatWhiteShark = false
+    end
+    if has_value(Options.seaMonsterList.Value, 'BigGreatWhiteShark') then
+        settings.espBigGreatWhiteShark = true
+        
+    else
+        settings.espBigGreatWhiteShark = false
+    end
+    if has_value(Options.seaMonsterList.Value, 'NeonGreatWhiteShark') then
+        settings.espNeonGreatWhiteShark = true
+        
+    else
+        settings.espNeonGreatWhiteShark = false
+    end
+    if has_value(Options.seaMonsterList.Value, 'KillerWhale') then
+        settings.espKillerWhale = true
+        
+    else
+        settings.espKillerWhale = false
+    end
+    if has_value(Options.seaMonsterList.Value, 'NeonKillerWhale') then
+        settings.espNeonKillerWhale = true
+        
+    else
+        settings.espNeonKillerWhale = false
+    end
+    if has_value(Options.seaMonsterList.Value, 'HammerheadShark') then
+        settings.espHammerheadShark = true
+    else
+        settings.espHammerheadShark = false
+    end
+    print(settings.espGreatWhiteShark)
+    print(settings.espBigGreatWhiteShark)
+    print(settings.espNeonGreatWhiteShark)
+    print(settings.espKillerWhale)
+    print(settings.espNeonKillerWhale)
+    print(settings.espHammerheadShark)
+end)
+
+local ESP = loadstring(game:HttpGet("https://kiriot22.com/releases/ESP.lua"))()
+ESP.Players = false
+ESP.Boxes = true
+ESP.Names = true
+
+
+local a,b,c,d,e,f = false,false,false,false,false,false
 coroutine.resume(coroutine.create(function()
 	while task.wait(0.1) do
-		if settings.playerMovementToggle then
-			PlayerHumanoid.WalkSpeed = settings.playerSpeed
-			PlayerHumanoid.JumpPower = settings.playerJumpH
-		else
-			PlayerHumanoid.WalkSpeed = 30
-			PlayerHumanoid.JumpPower = 50
+		ESP:Toggle(settings.espToggle)
+		if settings.espToggle == true then
+			if a then
+				a = true
+				ESP:AddObjectListener(Workspace, {
+					Name = "GreatWhiteShark",
+					CustomName = "GreatWhiteShark",
+					Color = Color3.fromRGB(0, 255, 68),
+					IsEnabled = "GreatWhiteShark"
+				})
+			end
+            if b then 
+                b = true
+                ESP:AddObjectListener(Workspace, {
+					Name = "BigGreatWhiteShark",
+					CustomName = "BigGreatWhiteShark",
+					Color = Color3.fromRGB(255, 221, 0),
+					IsEnabled = "BigGreatWhiteShark"
+				})
+            end
+            if c then
+                c = true
+                ESP:AddObjectListener(Workspace, {
+					Name = "NeonGreatWhiteShark",
+					CustomName = "NeonGreatWhiteShark",
+					Color = Color3.fromRGB(255, 0, 0),
+					IsEnabled = "NeonGreatWhiteShark"
+				})
+            end
+            if d then
+                d = true
+                ESP:AddObjectListener(Workspace, {
+					Name = "KillerWhale",
+					CustomName = "KillerWhale",
+					Color = Color3.fromRGB(0, 89, 255),
+					IsEnabled = "KillerWhale"
+				})
+            end
+            if e then
+                e = true
+                ESP:AddObjectListener(Workspace, {
+					Name = "NeonKillerWhale",
+					CustomName = "NeonKillerWhale",
+					Color = Color3.fromRGB(0, 255, 217),
+					IsEnabled = "NeonKillerWhale"
+				})
+            end
+            if f then
+                f = true
+                ESP:AddObjectListener(Workspace, {
+					Name = "HammerheadShark",
+					CustomName = "HammerheadShark",
+					Color = Color3.fromRGB(255, 111, 0),
+					IsEnabled = "HammerheadShark"
+				})
+            end
+		elseif settings.espToggle == false then
+			if not a then
+				a = false
+				ESP:AddObjectListener(Workspace, {
+					Name = "GreatWhiteShark",
+					CustomName = "GreatWhiteShark",
+					Color = Color3.fromRGB(0, 255, 68),
+					IsEnabled = "GreatWhiteShark"
+				})
+			end
+            if not b then 
+                b = false
+                ESP:AddObjectListener(Workspace, {
+					Name = "BigGreatWhiteShark",
+					CustomName = "BigGreatWhiteShark",
+					Color = Color3.fromRGB(255, 221, 0),
+					IsEnabled = "BigGreatWhiteShark"
+				})
+            end
+            if not c then
+                c = false
+                ESP:AddObjectListener(Workspace, {
+					Name = "NeonGreatWhiteShark",
+					CustomName = "NeonGreatWhiteShark",
+					Color = Color3.fromRGB(255, 0, 0),
+					IsEnabled = "NeonGreatWhiteShark"
+				})
+            end
+            if not d then
+                d = false
+                ESP:AddObjectListener(Workspace, {
+					Name = "KillerWhale",
+					CustomName = "KillerWhale",
+					Color = Color3.fromRGB(0, 89, 255),
+					IsEnabled = "KillerWhale"
+				})
+            end
+            if not e then
+                e = false
+                ESP:AddObjectListener(Workspace, {
+					Name = "NeonKillerWhale",
+					CustomName = "NeonKillerWhale",
+					Color = Color3.fromRGB(0, 255, 217),
+					IsEnabled = "NeonKillerWhale"
+				})
+            end
+            if not f then
+                f = false
+                ESP:AddObjectListener(Workspace, {
+					Name = "HammerheadShark",
+					CustomName = "HammerheadShark",
+					Color = Color3.fromRGB(255, 111, 0),
+					IsEnabled = "HammerheadShark"
+				})
+            end
 		end
+		ESP.GreatWhiteShark = settings.espGreatWhiteShark
+		ESP.BigGreatWhiteShark = settings.espBigGreatWhiteShark
+		ESP.NeonGreatWhiteShark = settings.espNeonGreatWhiteShark
+		ESP.KillerWhale = settings.espKillerWhale
+		ESP.NeonKillerWhale = settings.espNeonKillerWhale
+		ESP.HammerheadShark = settings.espHammerheadShark
 	end
 end))
-
-
 --#endregion
-
---#region Infinite Jump
-function infiniteJump(Value)
-	game:GetService("UserInputService").JumpRequest:connect(function()
-		if Value then
-			game:GetService "Players".LocalPlayer.Character:FindFirstChildOfClass 'Humanoid':ChangeState("Jumping")
-		end
-	end)
-end
-
---#endregion
-
-OrionLib:Init()
