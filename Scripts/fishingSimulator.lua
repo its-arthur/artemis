@@ -134,7 +134,7 @@ autoSell:AddSlider('autoSellDelay', {
     Default = settings.autoSellDelay,
     Min = 0,
     Max = 5,
-    Rounding = 1,
+    Rounding = 0,
     Compact = false,
 })
 
@@ -152,7 +152,7 @@ playerConfig:AddSlider('playerSpeed', {
     Default = settings.playerSpeed,
     Min = 25,
     Max = 100,
-    Rounding = 1,
+    Rounding = 0,
     Compact = false,
 })
 
@@ -161,7 +161,7 @@ playerConfig:AddSlider('playerJumpH', {
     Default = settings.playerJumpH,
     Min = 50,
     Max = 100,
-    Rounding = 1,
+    Rounding = 0,
     Compact = false,
 })
 
@@ -192,7 +192,7 @@ boatConfig:AddSlider('boatSpeed', {
     Default = settings.boatSpeed,
     Min = 15,
     Max = 190,
-    Rounding = 1,
+    Rounding = 0,
     Compact = false,
 })
 
