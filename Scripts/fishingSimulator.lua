@@ -3,6 +3,13 @@ repeat task.wait() until game:IsLoaded()
 repeat task.wait() until game.Workspace:FindFirstChild(game.Players.LocalPlayer.Name)
 --#endregion
 
+--#region AntiAFK
+connectAntiAfk = game:GetService('Players').LocalPlayer.Idled:connect(function()
+    game:GetService('VirtualUser'):CaptureController()
+    game:GetService('VirtualUser'):ClickButton2(Vector2.new())
+end)
+--#endregion
+
 --------------------------------------------------
 ------------------- Init Data --------------------
 --------------------------------------------------
@@ -61,6 +68,7 @@ function read_settings()
 		return value
 	else
 		settings.autoSellDelay = 0
+        settings.autoChestToggle = false
 		settings.boatSpeed = 85
 		settings.boatSpeedToggle = false
 		settings.playerSpeed = 30
@@ -108,7 +116,7 @@ local Window = Library:CreateWindow({
 local Tabs = {
     -- Creates a new tab titled Main
     ['Main'] = Window:AddTab('Main'),
-    ['Egg & Chest'] = Window:AddTab('Egg & Chest'),
+    ['Tools & Pets'] = Window:AddTab('Tools & Pets'),
     ['Misc'] = Window:AddTab('Misc'),
     ['UI Settings'] = Window:AddTab('UI Settings'),
     ['Test'] = Window:AddTab('Test'),
@@ -300,16 +308,35 @@ espConfig:AddDropdown('seaMonsterList', {
 --#endregion
 
 --#region [Main] Chest
-local chestOpener = Tabs['Egg & Chest']:AddLeftGroupbox('Chest')
+local chestOpener = Tabs['Main']:AddLeftGroupbox('Chest')
 
-chestOpener:AddDropdown('chestList', {
+chestOpener:AddDropdown('chestType', {
+    Text = "Chest Type",
+    Values = {"Daily Chest", "Random Chest", "Suken Chest"},
+    Default = "--", -- number index of the value / string
+    Multi = false, -- true / false, allows multiple choices to be selected
+})
+
+chestOpener:AddToggle('autoChestToggle', {
+    Text = 'Auto Chest',
+    Default = settings.autoChestToggle,
+
+    Callback = function(Value)
+        settings.autoChestToggle = Value
+    end
+})
+
+--#region [Tools & Pets] Chest
+local toolsOpener = Tabs['Tools & Pets']:AddLeftGroupbox('Tools')
+
+toolsOpener:AddDropdown('chestList', {
     Text = "Chest List",
     Values = CHESTLIST,
     Default = "--", -- number index of the value / string
     Multi = false, -- true / false, allows multiple choices to be selected
 })
 
-chestOpener:AddButton({
+toolsOpener:AddButton({
     Text = 'Open Chest!',
     Func = function()
         if Options.chestList.Value == "Stone Chest" then
@@ -324,17 +351,17 @@ chestOpener:AddButton({
 })
 --#endregion
 
---#region [Main] Egg
-local eggOpener = Tabs['Egg & Chest']:AddRightGroupbox('Egg')
+--#region [Tools & Pets] Egg
+local petsOpener = Tabs['Tools & Pets']:AddRightGroupbox('Pets')
 
-eggOpener:AddDropdown('eggList', {
+petsOpener:AddDropdown('eggList', {
     Text = "Egg List",
     Values = EGGLIST,
     Default = "--", -- number index of the value / string
     Multi = false, -- true / false, allows multiple choices to be selected
 })
 
-eggOpener:AddButton({
+petsOpener:AddButton({
     Text = 'Open Egg!',
     Func = function()
         if Options.eggList.Value == "Normal Egg" then
@@ -475,6 +502,47 @@ task.spawn(function()
         if Library.Unloaded then break end
     end
 end)
+--#endregion
+
+--#region [autoChest] autoChest
+coroutine.resume(coroutine.create(function()
+	while task.wait(0.1) do
+        if settings.autoChestToggle then
+            if Options.chestType.Value == "Daily Chest" then
+                for i, v in pairs(game.Workspace.Islands:GetDescendants()) do
+                    if v:IsA("Model") and string.match(v.Name, "Chest") then
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame
+                        wait(1)
+                        fireproximityprompt(v.HumanoidRootPart.ProximityPrompt)
+                    end
+                end
+            elseif Options.chestType.Value == "Random Chest" then
+                for i, v in pairs(game.Workspace.RandomChests:GetDescendants()) do
+                    if v:IsA("Model") and string.match(v.Name, "Chest") then
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.HumanoidRootPart.CFrame
+                        wait(1)
+                        fireproximityprompt(v.HumanoidRootPart.ProximityPrompt)
+                    end
+                end            
+            elseif Options.chestType.Value == "Suken Chest" then
+                wait(5)
+                for i, v in pairs(game.Workspace:GetChildren()) do
+                    if string.find(v.Name, "ShipModel") then
+                            teleport(v.HitBox.CFrame)
+                            for i, x in pairs(v:GetChildren()) do
+                                if string.match(x.Name, "Chest_") then
+                                    teleport(x.HumanoidRootPart.CFrame)
+                                    wait(1)
+                                    fireproximityprompt(x.HumanoidRootPart.ProximityPrompt)    
+                                end                                
+                            end
+                        break
+                    end
+                end
+            end
+        end
+	end
+end))
 --#endregion
 
 --#region [playerConfig] playerSpeed
