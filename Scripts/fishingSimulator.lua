@@ -647,7 +647,7 @@ Options.seaMonsterList:OnChanged(function()
     print(settings.espHammerheadShark)
 end)
 
-local ESP = loadstring(game:HttpGet("https://kiriot22.com/releases/ESP.lua"))()
+local ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/its-arthur/artemis/main/Libs/ESP.lua"))()
 ESP.Players = false
 ESP.Boxes = true
 ESP.Names = true
