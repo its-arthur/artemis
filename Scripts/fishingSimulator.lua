@@ -24,6 +24,8 @@ local ISLANDLIST = {"Port Jackson", "Ancient Shores", "Shadow Isles", "Pharaoh's
 	"Monster's Borough" }
 local SHOPLIST = { "Boat Store", "Raygan's Tavern", "Supplies Store", "Pets Store" }
 local SEAMONLIST = { "GreatWhiteShark", "BigGreatWhiteShark", "NeonGreatWhiteShark", "KillerWhale", "NeonKillerWhale", "HammerheadShark"}
+local CHESTLIST = { "Stone Chest", "Silver Chest", "Gold Chest"}
+local EGGLIST = { "Normal Egg", "Royal Egg", "Ruby Egg", "Void Egg"}
 local folder_name = "artemis"
 local file_name = PlayerLocal.Name .. "_settings.json"
 settings = {}
@@ -106,6 +108,7 @@ local Window = Library:CreateWindow({
 local Tabs = {
     -- Creates a new tab titled Main
     ['Main'] = Window:AddTab('Main'),
+    ['Egg & Chest'] = Window:AddTab('Egg & Chest'),
     ['Misc'] = Window:AddTab('Misc'),
     ['UI Settings'] = Window:AddTab('UI Settings'),
     ['Test'] = Window:AddTab('Test'),
@@ -294,6 +297,58 @@ espConfig:AddDropdown('seaMonsterList', {
     Multi = true, -- true / false, allows multiple choices to be selected
 })
 
+--#endregion
+
+--#region [Main] Chest
+local chestOpener = Tabs['Egg & Chest']:AddLeftGroupbox('Chest')
+
+chestOpener:AddDropdown('chestList', {
+    Text = "Chest List",
+    Values = CHESTLIST,
+    Default = "--", -- number index of the value / string
+    Multi = false, -- true / false, allows multiple choices to be selected
+})
+
+chestOpener:AddButton({
+    Text = 'Open Chest!',
+    Func = function()
+        if Options.chestList.Value == "Stone Chest" then
+            GetDataStreams.OpenLootboxFunction:InvokeServer("stonechest",false)
+        elseif Options.chestList.Value == "Silver Chest" then
+            GetDataStreams.OpenLootboxFunction:InvokeServer("silverchest",false)
+        elseif Options.chestList.Value == "Gold Chest" then
+            GetDataStreams.OpenLootboxFunction:InvokeServer("goldchest",false)
+        end
+    end,
+    DoubleClick = true,
+})
+--#endregion
+
+--#region [Main] Egg
+local eggOpener = Tabs['Egg & Chest']:AddRightGroupbox('Egg')
+
+eggOpener:AddDropdown('eggList', {
+    Text = "Egg List",
+    Values = EGGLIST,
+    Default = "--", -- number index of the value / string
+    Multi = false, -- true / false, allows multiple choices to be selected
+})
+
+eggOpener:AddButton({
+    Text = 'Open Egg!',
+    Func = function()
+        if Options.eggList.Value == "Normal Egg" then
+            GetDataStreams.OpenLootboxFunction:InvokeServer("normalegg",false)
+        elseif Options.eggList.Value == "Royal Egg" then
+            GetDataStreams.OpenLootboxFunction:InvokeServer("royalegg",false)
+        elseif Options.eggList.Value == "Ruby Egg" then
+            GetDataStreams.OpenLootboxFunction:InvokeServer("rubyegg",false)
+        elseif Options.eggList.Value == "Void Egg" then
+            GetDataStreams.OpenLootboxFunction:InvokeServer("voidegg",false)
+        end
+    end,
+    DoubleClick = true,
+})
 --#endregion
 
 --#region [Misc] serverMisc
