@@ -117,7 +117,7 @@ local Tabs = {
 --#endregion
 
 --#region [Main] Sell
-local autoSell = Tabs['Main']:AddLeftGroupbox('Sell Section')
+local autoSell = Tabs['Main']:AddLeftGroupbox('Auto Sell Config')
 
 autoSell:AddLabel('Sell Keybind :'):AddKeyPicker('Sell', {
     Default = 'Q',
@@ -278,7 +278,7 @@ teleportList:AddButton({
 --#endregion
 
 --#region [Main] ESP
-local espConfig = Tabs['Main']:AddRightGroupbox('ESP')
+local espConfig = Tabs['Main']:AddRightGroupbox('ESP Config')
 
 espConfig:AddToggle('espToggle', {
     Text = 'Enable ESP',
