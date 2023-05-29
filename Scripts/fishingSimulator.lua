@@ -581,7 +581,7 @@ Options.shopTeleport:OnChanged(function()
     elseif locationSelected == "Raygan's Tavern" then
         GetDataStreams.EnterDoor:InvokeServer("TavernInterior", "Inside")
     elseif locationSelected == "Supplies Store" then
-        GetDataStreams.EnterDoor:InvokeServer("SuppliesStoreInterior", "MainEntrance")
+        GetDataStreams.EnterDoor:InvokeServer("SuppliesStoreInterior", "Inside")
     elseif locationSelected == "Pets Store" then
         GetDataStreams.EnterDoor:InvokeServer("PetShop", "MainEntrance")
     end
