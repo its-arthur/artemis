@@ -458,6 +458,7 @@ end))
 --#region [boatConfig] boatSpeed
 Options.boatSpeed:OnChanged(function()
     settings.boatSpeed = Options.boatSpeed.Value
+    print(settings.boatSpeed)
     save_settings()
 end)
 --#endregion
